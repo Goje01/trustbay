@@ -2,8 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { promises as fs } from "fs";
-import path from "path";
 import { bannedKeywordFlags, termsVersions } from "./constants";
 import { getCurrentUser } from "./auth";
 import { getAdminRole } from "./admin-session";
@@ -13,10 +11,17 @@ import { sendNotification } from "./notifications";
 import { hashPassword } from "./password";
 import { roleForEmail } from "./admin";
 import type { ProductType, SellerStatus } from "./types";
+import { v2 as cloudinary } from "cloudinary";
 
 function required(value: FormDataEntryValue | null) {
   return String(value || "").trim();
 }
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 function parseNumber(value: FormDataEntryValue | null, fallback = 0) {
   const parsed = Number(value || fallback);
@@ -29,15 +34,24 @@ async function requireUser() {
   return user;
 }
 
+
 async function saveUploadedFile(file: FormDataEntryValue | null) {
   if (!(file instanceof File) || !file.name) return undefined;
-  const safeName = file.name.replace(/[^a-zA-Z0-9_.-]/g, "");
-  const filename = `${id("file")}-${safeName}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadDir, { recursive: true });
   const bytes = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(uploadDir, filename), bytes);
-  return `/uploads/${filename}`;
+
+  return new Promise<string | undefined>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "trustbay" },
+      (error: any, result: any) => {
+        if (error || !result) {
+          reject(error);
+          return;
+        }
+        resolve(result.secure_url);
+      }
+    );
+    uploadStream.end(bytes);
+  });
 }
 
 export async function acceptBuyerTerms() {
