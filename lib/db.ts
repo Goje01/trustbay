@@ -36,8 +36,12 @@ export async function readDb(): Promise<TrustBayData> {
 }
 
 export async function writeDb(data: TrustBayData) {
-  await fs.mkdir(path.dirname(dbPath), { recursive: true });
-  await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
+  try {
+    await fs.mkdir(path.dirname(dbPath), { recursive: true });
+    await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.warn("writeDb: unable to write to disk (running in read-only environment):", err);
+  }
 }
 
 export async function updateDb<T>(mutator: (data: TrustBayData) => T | Promise<T>) {
