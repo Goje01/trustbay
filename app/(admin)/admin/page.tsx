@@ -42,7 +42,7 @@ export default async function AdminPage() {
       <section className="section">
         <div className="section-head"><h2>Marketplace Seller Approvals</h2></div>
         <div className="table"><table><tbody>
-          <tr><th>Seller</th><th>Matric No.</th><th>Dept / Level</th><th>School</th><th>ID Photo</th><th>Biodata Photo</th><th>Status</th><th>Action</th></tr>
+          <tr><th>Seller</th><th>Matric No.</th><th>Dept / Level</th><th>School</th><th>ID Photo</th><th>Biodata Photo</th><th>Bank Details</th><th>Status</th><th>Action</th></tr>
           {db.sellerProfiles.filter((profile) => profile.sellerType === "physical").map((profile) => {
             const seller = db.users.find((item) => item.id === profile.userId);
             return <tr key={profile.id}>
@@ -63,6 +63,15 @@ export default async function AdminPage() {
                       <img src={profile.biodataPhotoUrl} alt="Biodata" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} />
                     </a>
                   : "—"}
+              </td>
+              <td>
+                {seller?.bankName || seller?.bankAccountNumber || seller?.bankAccountName ? (
+                  <>
+                    {seller?.bankName || "—"}<br />
+                    {seller?.bankAccountNumber || "—"}<br />
+                    {seller?.bankAccountName || "—"}
+                  </>
+                ) : "—"}
               </td>
               <td>{profile.status}</td>
               <td>

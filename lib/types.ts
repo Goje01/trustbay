@@ -17,6 +17,11 @@ export type User = {
   profilePhotoUrl: string;
   passwordHash?: string;
   role: Role;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankAccountName?: string;
+  resetToken?: string;
+  resetTokenExpiresAt?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -201,7 +206,8 @@ export type NotificationType =
   | "event_ticket_confirmation"
   | "event_ticket_reminder"
   | "marketplace_safety_reminder"
-  | "copyright_complaint_received";
+  | "copyright_complaint_received"
+  | "password_reset_requested";
 
 export type TrustBayData = {
   users: User[];

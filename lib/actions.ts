@@ -210,6 +210,61 @@ export async function submitMarketplaceApplication(formData: FormData) {
   redirect("/seller");
 }
 
+export async function requestPasswordReset(formData: FormData) {
+  const email = required(formData.get("email")).toLowerCase();
+  const token = crypto.randomUUID().replaceAll("-", "");
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+  let matchedEmail = "";
+  let matchedName = "";
+
+  await updateDb((db) => {
+    const user = db.users.find((item) => item.email === email);
+    if (user) {
+      user.resetToken = token;
+      user.resetTokenExpiresAt = expiresAt;
+      user.updatedAt = nowIso();
+      matchedEmail = user.email;
+      matchedName = user.fullName;
+    }
+  });
+
+  if (matchedEmail) {
+    const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+    await sendNotification("password_reset_requested", matchedEmail, { resetUrl, name: matchedName });
+  }
+
+  redirect("/forgot-password?sent=1");
+}
+
+export async function resetPassword(formData: FormData) {
+  const token = required(formData.get("token"));
+  const password = String(formData.get("password") || "");
+  const confirmPassword = String(formData.get("confirmPassword") || "");
+
+  if (!token) redirect("/forgot-password");
+  if (password.length < 8) redirect(`/reset-password?token=${token}&error=short-password`);
+  if (password !== confirmPassword) redirect(`/reset-password?token=${token}&error=mismatch`);
+
+  let success = false;
+
+  await updateDb((db) => {
+    const user = db.users.find(
+      (item) => item.resetToken === token && item.resetTokenExpiresAt && new Date(item.resetTokenExpiresAt) > new Date()
+    );
+    if (user) {
+      user.passwordHash = hashPassword(password);
+      user.resetToken = undefined;
+      user.resetTokenExpiresAt = undefined;
+      user.updatedAt = nowIso();
+      success = true;
+    }
+  });
+
+  if (success) redirect("/login?created=1");
+  redirect("/forgot-password");
+}
+
 export async function createProduct(productType: ProductType, formData: FormData) {
   const user = await requireUser();
   const title = required(formData.get("title"));
@@ -449,4 +504,4 @@ export async function updateAdminNotificationSettings(formData: FormData) {
   });
 
   revalidatePath("/admin");
-}
+} 

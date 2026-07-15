@@ -54,6 +54,15 @@ export default async function MarketplaceApplyPage() {
           <label className="field">Student ID photo<input name="idPhoto" type="file" accept="image/*" required /></label>
           <label className="field">Biodata/profile picture<input name="biodataPhoto" type="file" accept="image/*" required /></label>
           <label className="wide">School name<textarea name="schoolInfo" placeholder="e.g. Modibbo Adama University" required /></label>
+          <label className="field">Bank name<input name="bankName" type="text" required /></label>
+          <label className="field">Account number<input name="bankAccountNumber" type="text" required /></label>
+          <label className="field">
+            Account name
+            <input name="bankAccountName" type="text" required />
+            <small style={{ display: "block", marginTop: 4, color: "#b45309" }}>
+              ⚠️ Enter the exact full name on the bank account — it must match the account number exactly, or your payout may fail or go to the wrong person.
+            </small>
+          </label>
           <button className="btn dark">Submit For Admin Review</button>
         </form>
       </section>

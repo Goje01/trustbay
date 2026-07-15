@@ -1,9 +1,8 @@
 import "server-only";
-import { promises as fs } from "fs";
-import path from "path";
 import type { TrustBayData } from "./types";
+import { Pool } from "@neondatabase/serverless";
 
-const dbPath = path.join(process.cwd(), "data", "trust-bay.json");
+const pool = new Pool({ connectionString: process.env.DB_URL || process.env.NEON_DATABASE_URL || process.env.DATABASE_URL });
 
 export const emptyData: TrustBayData = {
   users: [],
@@ -25,22 +24,32 @@ export const emptyData: TrustBayData = {
   }
 };
 
+async function ensureTable() {
+  await pool.query(`CREATE TABLE IF NOT EXISTS kv_store (key text PRIMARY KEY, value jsonb)`);
+}
+
 export async function readDb(): Promise<TrustBayData> {
+  await ensureTable();
   try {
-    const raw = await fs.readFile(dbPath, "utf8");
-    return { ...emptyData, ...JSON.parse(raw) };
-  } catch {
-    await writeDb(emptyData);
+    const res = await pool.query("SELECT value FROM kv_store WHERE key = $1", ["trust-bay"]);
+    if (!res || !res.rows || res.rows.length === 0) return structuredClone(emptyData);
+    const row = res.rows[0].value as TrustBayData;
+    return { ...emptyData, ...row };
+  } catch (err) {
+    console.warn("readDb: unable to read from database, falling back to empty data:", err);
     return structuredClone(emptyData);
   }
 }
 
 export async function writeDb(data: TrustBayData) {
+  await ensureTable();
   try {
-    await fs.mkdir(path.dirname(dbPath), { recursive: true });
-    await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
+    await pool.query(
+      `INSERT INTO kv_store(key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      ["trust-bay", data]
+    );
   } catch (err) {
-    console.warn("writeDb: unable to write to disk (running in read-only environment):", err);
+    console.warn("writeDb: unable to write to database:", err);
   }
 }
 

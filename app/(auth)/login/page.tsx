@@ -19,9 +19,17 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           <span className="icon-tile"><Icons.ShieldCheck size={20} /></span>
           <h2>Sign in securely</h2>
           <p className="muted">Buyer terms appear after sign-in before transactions and marketplace access.</p>
-          {params?.created ? <p className="notice">Account created. You can now log in.</p> : null}
+          {params?.created ? (
+            <>
+              <p className="notice">Account created. You can now log in.</p>
+              <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+                Didn't get a welcome email? Check your Spam or Junk folder and mark it "Not spam".
+              </p>
+            </>
+          ) : null}
           {params?.error === "account-exists" ? <p className="form-error">That email already has an account. Please log in.</p> : null}
           <LoginForm callbackUrl={callbackUrl} />
+          <p style={{ marginTop: 10 }}><Link href="/forgot-password" style={{ fontSize: 14 }}>Forgot password?</Link></p>
           <div className="auth-divider"><span>or</span></div>
           <GoogleButton callbackUrl={callbackUrl} />
           <p className="auth-note">New here? <Link href="/register">Create an account</Link></p>

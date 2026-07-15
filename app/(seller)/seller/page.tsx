@@ -32,6 +32,10 @@ export default async function SellerDashboardPage({ searchParams }: { searchPara
         <p>Track products, upload fees, digital sales, chats, reports, renewals, and manual payouts.</p>
       </section>
 
+      <section className="muted" style={{ fontSize: 13, marginBottom: 16 }}>
+        📧 Approval and payment emails sometimes land in Spam — check there and mark Trust Bay emails as "Not spam" so you don't miss updates.
+      </section>
+
       {params?.payment === "successful" ? (
         <section className="notice">
           Payment confirmed. Your product has been activated and email notifications were queued.

@@ -31,7 +31,8 @@ const subjects: Record<NotificationType, string> = {
   event_ticket_confirmation: "Event ticket/order confirmation",
   event_ticket_reminder: "Event reminder from Trust Bay",
   marketplace_safety_reminder: "Marketplace safety reminder",
-  copyright_complaint_received: "Copyright complaint received"
+  copyright_complaint_received: "Copyright complaint received",
+  password_reset_requested: "Reset your Trust Bay password"
 };
 
 const bodies: Record<NotificationType, (data: TemplateData) => string> = {
@@ -59,7 +60,8 @@ const bodies: Record<NotificationType, (data: TemplateData) => string> = {
   event_ticket_confirmation: (d) => `Your event ticket/order for ${d.eventName} is confirmed.`,
   event_ticket_reminder: (d) => `Reminder: ${d.eventName} starts on ${d.eventStartsAt}.`,
   marketplace_safety_reminder: () => "Inspect before payment, meet in safe campus locations, and keep chat inside Trust Bay.",
-  copyright_complaint_received: (d) => `A copyright complaint for ${d.productTitle || "a digital product"} has been received for admin review.`
+  copyright_complaint_received: (d) => `A copyright complaint for ${d.productTitle || "a digital product"} has been received for admin review.`,
+  password_reset_requested: (d) => `Hi ${d.name || "there"}, click this link to reset your password: ${d.resetUrl}. This link expires in 1 hour. If you didn't request this, ignore this email.`
 };
 
 // High-frequency, routine types that should NOT also CC both admin inboxes.
@@ -67,7 +69,8 @@ const skipAdminCopyTypes = new Set<NotificationType>([
   "new_chat_message",
   "digital_purchase_successful_buyer",
   "digital_purchase_successful_seller",
-  "product_live"
+  "product_live",
+  "password_reset_requested"
 ]);
 
 function transporter() {
