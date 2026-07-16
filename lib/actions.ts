@@ -34,19 +34,37 @@ async function requireUser() {
   return user;
 }
 
-
 async function saveUploadedFile(file: FormDataEntryValue | null) {
-  if (!(file instanceof File) || !file.name) return undefined;
+  console.log("[saveUploadedFile] input:", {
+    isFile: file instanceof File,
+    name: file instanceof File ? file.name : typeof file,
+    size: file instanceof File ? file.size : null,
+    type: file instanceof File ? file.type : null
+  });
+
+  if (!(file instanceof File) || !file.name) {
+    console.log("[saveUploadedFile] rejected: not a valid File");
+    return undefined;
+  }
+
   const bytes = Buffer.from(await file.arrayBuffer());
+  console.log("[saveUploadedFile] buffer length:", bytes.length);
 
   return new Promise<string | undefined>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "trustbay" },
       (error: any, result: any) => {
-        if (error || !result) {
+        if (error) {
+          console.log("[saveUploadedFile] cloudinary error:", error.message || error);
           reject(error);
           return;
         }
+        if (!result) {
+          console.log("[saveUploadedFile] cloudinary returned no result");
+          reject(new Error("No result from Cloudinary"));
+          return;
+        }
+        console.log("[saveUploadedFile] success:", result.secure_url);
         resolve(result.secure_url);
       }
     );
@@ -504,4 +522,4 @@ export async function updateAdminNotificationSettings(formData: FormData) {
   });
 
   revalidatePath("/admin");
-} 
+}
