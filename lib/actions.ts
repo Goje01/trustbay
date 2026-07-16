@@ -42,8 +42,8 @@ async function saveUploadedFile(file: FormDataEntryValue | null) {
     type: file instanceof File ? file.type : null
   });
 
-  if (!(file instanceof File) || !file.name) {
-    console.log("[saveUploadedFile] rejected: not a valid File");
+  if (!(file instanceof File) || !file.name || file.size === 0) {
+    console.log("[saveUploadedFile] rejected: not a valid File or empty");
     return undefined;
   }
 
