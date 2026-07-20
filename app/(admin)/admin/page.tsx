@@ -1,10 +1,12 @@
 import { adminReviewSeller, adminUpdateProduct, updateAdminNotificationSettings } from "@/lib/actions";
 import { getAdminRole } from "@/lib/admin-session";
 import { readDb } from "@/lib/db";
+import { getRecentErrorLogs } from "@/lib/error-log";
 
 export default async function AdminPage() {
   const role = await getAdminRole();
   const db = await readDb();
+  const errorLogs = await getRecentErrorLogs(30);
   const allowed = role === "ceo" || role === "super_admin";
 
   if (!allowed) {
@@ -146,6 +148,22 @@ export default async function AdminPage() {
         <div className="table"><table><tbody>
           <tr><th>Type</th><th>Recipient</th><th>Status</th><th>Subject</th></tr>
           {db.notificationLogs.slice(-40).reverse().map((log) => <tr key={log.id}><td>{log.type}</td><td>{log.recipientEmail}</td><td>{log.status}</td><td>{log.subject}</td></tr>)}
+        </tbody></table></div>
+      </section>
+
+      <section className="section">
+        <div className="section-head"><h2>Client Error Logs</h2></div>
+        <div className="table"><table><tbody>
+          <tr><th>Time</th><th>Message</th><th>URL</th><th>User</th><th>Device</th></tr>
+          {errorLogs.map((log) => (
+            <tr key={log.id}>
+              <td>{new Date(log.created_at).toLocaleString()}</td>
+              <td>{log.message}</td>
+              <td>{log.url}</td>
+              <td>{log.user_email || "—"}</td>
+              <td style={{ fontSize: 11 }}>{log.user_agent}</td>
+            </tr>
+          ))}
         </tbody></table></div>
       </section>
     </main>
