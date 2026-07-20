@@ -34,12 +34,16 @@ async function requireUser() {
   return user;
 }
 
-async function saveUploadedFile(file: FormDataEntryValue | null) {
+async function saveUploadedFile(
+  file: FormDataEntryValue | null,
+  resourceType: "image" | "raw" = "image"
+) {
   console.log("[saveUploadedFile] input:", {
     isFile: file instanceof File,
     name: file instanceof File ? file.name : typeof file,
     size: file instanceof File ? file.size : null,
-    type: file instanceof File ? file.type : null
+    type: file instanceof File ? file.type : null,
+    resourceType
   });
 
   if (!(file instanceof File) || !file.name || file.size === 0) {
@@ -52,7 +56,7 @@ async function saveUploadedFile(file: FormDataEntryValue | null) {
 
   return new Promise<string | undefined>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: "trustbay" },
+      { folder: "trustbay", resource_type: resourceType },
       (error: any, result: any) => {
         if (error) {
           console.log("[saveUploadedFile] cloudinary error:", error.message || error);
@@ -124,8 +128,12 @@ export async function registerAccount(formData: FormData) {
   redirect("/login?created=1");
 }
 
-export async function acceptDigitalSellerTerms() {
+export async function acceptDigitalSellerTerms(formData: FormData) {
   const user = await requireUser();
+  const bankName = required(formData.get("bankName"));
+  const bankAccountNumber = required(formData.get("bankAccountNumber"));
+  const bankAccountName = required(formData.get("bankAccountName"));
+
   await updateDb((db) => {
     db.termsAcceptances.push({
       id: id("term"),
@@ -143,6 +151,14 @@ export async function acceptDigitalSellerTerms() {
         createdAt: nowIso(),
         updatedAt: nowIso()
       });
+    }
+
+    const userRecord = db.users.find((item) => item.id === user.id);
+    if (userRecord) {
+      if (bankName) userRecord.bankName = bankName;
+      if (bankAccountNumber) userRecord.bankAccountNumber = bankAccountNumber;
+      if (bankAccountName) userRecord.bankAccountName = bankAccountName;
+      userRecord.updatedAt = nowIso();
     }
   });
   redirect("/seller/digital/upload");
@@ -195,6 +211,9 @@ export async function submitMarketplaceApplication(formData: FormData) {
   const matricNumber = required(formData.get("matricNumber"));
   const department = required(formData.get("department"));
   const level = required(formData.get("level"));
+  const bankName = required(formData.get("bankName"));
+  const bankAccountNumber = required(formData.get("bankAccountNumber"));
+  const bankAccountName = required(formData.get("bankAccountName"));
 
   await updateDb((db) => {
     const existing = db.sellerProfiles.find((profile) => profile.userId === user.id && profile.sellerType === "physical");
@@ -222,6 +241,9 @@ export async function submitMarketplaceApplication(formData: FormData) {
       if (matricNumber) userRecord.matricNumberEncrypted = matricNumber;
       if (department) userRecord.department = department;
       if (level) userRecord.level = level;
+      if (bankName) userRecord.bankName = bankName;
+      if (bankAccountNumber) userRecord.bankAccountNumber = bankAccountNumber;
+      if (bankAccountName) userRecord.bankAccountName = bankAccountName;
       userRecord.updatedAt = nowIso();
     }
   });
@@ -293,7 +315,7 @@ export async function createProduct(productType: ProductType, formData: FormData
   const hasRiskFlag = bannedKeywordFlags.some((flag) => textToFlag.includes(flag));
   let productId = "";
   const coverImageUrl = await saveUploadedFile(formData.get("coverImage"));
-  const fileUrl = productType === "digital" ? await saveUploadedFile(formData.get("digitalFile")) : undefined;
+  const fileUrl = productType === "digital" ? await saveUploadedFile(formData.get("digitalFile"), "raw") : undefined;
   const imageUrls = [
     await saveUploadedFile(formData.get("imageOne")),
     await saveUploadedFile(formData.get("imageTwo"))

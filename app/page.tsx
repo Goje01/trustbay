@@ -32,7 +32,7 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
 
           <div className="trust-strip">
             <div><strong>30 min</strong><span>digital dispute window</span></div>
-            <div><strong>Google</strong><span>only account sign-in</span></div>
+            <div><strong>Google</strong><span> Account sign-in</span></div>
             <div><strong>Admin</strong><span>seller access control</span></div>
           </div>
         </div>

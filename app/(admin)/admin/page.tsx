@@ -88,6 +88,46 @@ export default async function AdminPage() {
       </section>
 
       <section className="section">
+        <div className="section-head"><h2>Digital Sellers — Bank Details</h2><p>Digital sellers are auto-approved. Bank details are shown here for payout reference only.</p></div>
+        <div className="table"><table><tbody>
+          <tr><th>Seller</th><th>Bank Name</th><th>Account Number</th><th>Account Name</th></tr>
+          {db.sellerProfiles.filter((profile) => profile.sellerType === "digital").map((profile) => {
+            const seller = db.users.find((item) => item.id === profile.userId);
+            if (!seller?.bankName && !seller?.bankAccountNumber && !seller?.bankAccountName) return null;
+            return <tr key={profile.id}>
+              <td>{seller?.fullName}<br />{seller?.email}</td>
+              <td>{seller?.bankName || "—"}</td>
+              <td>{seller?.bankAccountNumber || "—"}</td>
+              <td>{seller?.bankAccountName || "—"}</td>
+            </tr>;
+          })}
+        </tbody></table></div>
+      </section>
+
+      <section className="section">
+        <div className="section-head"><h2>Reports / Disputes</h2></div>
+        <div className="table"><table><tbody>
+          <tr><th>Type</th><th>Product</th><th>Reporter</th><th>Description</th><th>Proof</th><th>Status</th></tr>
+          {db.reports.slice().reverse().map((report) => {
+            const product = db.products.find((item) => item.id === report.productId);
+            const reporter = db.users.find((item) => item.id === report.reporterId);
+            return <tr key={report.id}>
+              <td>{report.type}</td>
+              <td>{product?.title || "—"}</td>
+              <td>{reporter?.fullName || "—"}<br />{reporter?.email || "—"}</td>
+              <td style={{ maxWidth: 260, whiteSpace: "pre-wrap" }}>{report.description}</td>
+              <td>
+                {report.proofUrl
+                  ? <a href={report.proofUrl} target="_blank" rel="noopener noreferrer">View</a>
+                  : "—"}
+              </td>
+              <td>{report.status}</td>
+            </tr>;
+          })}
+        </tbody></table></div>
+      </section>
+
+      <section className="section">
         <div className="section-head"><h2>Products</h2></div>
         <div className="table"><table><tbody>
           <tr><th>Title</th><th>Type</th><th>Status</th><th>Action</th></tr>

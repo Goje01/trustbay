@@ -1,5 +1,8 @@
 import { categories } from "@/lib/constants";
 import { createProduct } from "@/lib/actions";
+import { SubmitButton } from "@/components/submit-button";
+
+export const maxDuration = 60;
 
 export default function DigitalUploadPage() {
   return <UploadForm title="Digital Product Upload" productType="digital" />;
@@ -19,7 +22,7 @@ function UploadForm({ title, productType }: { title: string; productType: "digit
           <label className="field">Digital file<input name="digitalFile" type="file" required /></label>
           <label className="wide">Description<textarea name="description" required /></label>
           <label className="wide" style={{ display: "flex", gap: 10, alignItems: "center" }}><input style={{ width: 18, minHeight: 18 }} type="checkbox" required /> I accept upload fee terms, copyright responsibility, and account removal policy.</label>
-          <button className="btn dark">Calculate Fee and Continue to Paystack</button>
+          <SubmitButton>Calculate Fee and Continue to Paystack</SubmitButton>
         </form>
       </section>
     </main>
