@@ -1,7 +1,9 @@
-import { submitMarketplaceApplication } from "@/lib/actions";
 import { getCurrentUser } from "@/lib/auth";
 import { readDb } from "@/lib/db";
 import Link from "next/link";
+import { MarketplaceApplyForm } from "@/components/marketplace-apply-form";
+
+export const maxDuration = 120;
 
 export default async function MarketplaceApplyPage() {
   const user = await getCurrentUser();
@@ -46,25 +48,7 @@ export default async function MarketplaceApplyPage() {
       )}
 
       <section className="form-panel">
-        <form className="form-grid" action={submitMarketplaceApplication}>
-          <label className="field">Full name<input name="fullName" type="text" required /></label>
-          <label className="field">Matric / registration number<input name="matricNumber" type="text" required /></label>
-          <label className="field">Department<input name="department" type="text" required /></label>
-          <label className="field">Level<input name="level" type="text" placeholder="e.g. 300" required /></label>
-          <label className="field">Student ID photo<input name="idPhoto" type="file" accept="image/*" required /></label>
-          <label className="field">Biodata/profile picture<input name="biodataPhoto" type="file" accept="image/*" required /></label>
-          <label className="wide">School name<textarea name="schoolInfo" placeholder="e.g. Modibbo Adama University" required /></label>
-          <label className="field">Bank name<input name="bankName" type="text" required /></label>
-          <label className="field">Account number<input name="bankAccountNumber" type="text" required /></label>
-          <label className="field">
-            Account name
-            <input name="bankAccountName" type="text" required />
-            <small style={{ display: "block", marginTop: 4, color: "#b45309" }}>
-              ⚠️ Enter the exact full name on the bank account — it must match the account number exactly, or your payout may fail or go to the wrong person.
-            </small>
-          </label>
-          <button className="btn dark">Submit For Admin Review</button>
-        </form>
+        <MarketplaceApplyForm />
       </section>
     </main>
   );
