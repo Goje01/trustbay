@@ -7,6 +7,7 @@ import { getCurrentUser } from "./auth";
 import { getAdminRole } from "./admin-session";
 import { id, nowIso, slugify, updateDb } from "./db";
 import { calculateUploadFee, estimatePaystackFeeSplit, applyUploadPromoCode } from "./money";
+import { completeSuccessfulPayment } from "./payments";
 import { sendNotification } from "./notifications";
 import { hashPassword } from "./password";
 import { roleForEmail } from "./admin";
@@ -317,6 +318,7 @@ export async function createProduct(productType: ProductType, formData: FormData
   const textToFlag = `${title} ${required(formData.get("description"))}`.toLowerCase();
   const hasRiskFlag = bannedKeywordFlags.some((flag) => textToFlag.includes(flag));
   let productId = "";
+  const uploadPaymentReference = `UP-${crypto.randomUUID().slice(0, 12).toUpperCase()}`;
   const coverImageUrl = await saveUploadedFile(formData.get("coverImage"));
   const fileUrl = productType === "digital" ? await saveUploadedFile(formData.get("digitalFile"), "raw") : undefined;
   const imageUrls = [
@@ -360,7 +362,7 @@ export async function createProduct(productType: ProductType, formData: FormData
       sellerId: user.id,
       productId,
       amount: uploadFeeAmount,
-      paystackReference: `UP-${crypto.randomUUID().slice(0, 12).toUpperCase()}`,
+      paystackReference: uploadPaymentReference,
       status: "pending",
       createdAt: nowIso()
     });
@@ -378,6 +380,15 @@ export async function createProduct(productType: ProductType, formData: FormData
       });
     }
   });
+
+  // A fully-discounted (₦0) upload fee can't go through Paystack — some banks
+  // reject sub-₦100 charges outright. Skip the payment gateway entirely and
+  // run the exact same "payment succeeded" logic a real Paystack charge would
+  // trigger, keyed off the same reference we just stored on this payment.
+  if (promoApplied && uploadFeeAmount <= 0) {
+    const redirectPath = await completeSuccessfulPayment(uploadPaymentReference);
+    redirect(redirectPath);
+  }
 
   redirect(`/api/paystack/initialize?type=upload_fee&id=${productId}`);
 }
