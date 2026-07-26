@@ -16,6 +16,7 @@ export default function PhysicalUploadPage() {
           <label className="field">Cover image<input name="coverImage" type="file" accept="image/*" required /></label>
           <label className="field">Extra image<input name="imageOne" type="file" accept="image/*" /></label>
           <label className="wide">Description<textarea name="description" required /></label>
+          <label className="field">Promo code (optional)<input name="promoCode" placeholder="e.g. LAUNCH99" /></label>
           <label className="wide" style={{ display: "flex", gap: 10, alignItems: "center" }}><input style={{ width: 18, minHeight: 18 }} type="checkbox" required /> I accept marketplace terms, inspection warning, upload fee terms, and removal policy.</label>
           <button className="btn dark">Calculate Fee and Continue to Paystack</button>
         </form>

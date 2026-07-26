@@ -38,3 +38,21 @@ export function estimatePaystackFeeSplit(amount: number) {
     sellerShare: Math.round(estimatedFee / 2)
   };
 }
+
+// ── Upload-fee launch promo ──────────────────────────────────────────────
+export const UPLOAD_PROMO_CODE = "LAUNCH99";
+export const UPLOAD_PROMO_DISCOUNT_PERCENT = 99;
+// Set to an ISO date string (e.g. "2026-08-31T23:59:59.000Z") to auto-expire
+// the promo, or leave as null to keep it open until you change the code.
+export const UPLOAD_PROMO_EXPIRES_AT: string | null = null;
+
+export function applyUploadPromoCode(feeAmount: number, rawCode: string | null | undefined) {
+  const code = (rawCode || "").trim().toUpperCase();
+  const isCorrectCode = code === UPLOAD_PROMO_CODE;
+  const isExpired = UPLOAD_PROMO_EXPIRES_AT ? new Date() > new Date(UPLOAD_PROMO_EXPIRES_AT) : false;
+  const applied = isCorrectCode && !isExpired;
+  const discountedFee = applied
+    ? Math.max(0, Math.round(feeAmount * (1 - UPLOAD_PROMO_DISCOUNT_PERCENT / 100)))
+    : feeAmount;
+  return { applied, discountedFee };
+}

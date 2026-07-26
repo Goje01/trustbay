@@ -21,6 +21,7 @@ function UploadForm({ title, productType }: { title: string; productType: "digit
           <label className="field">Cover image<input name="coverImage" type="file" accept="image/*" required /></label>
           <label className="field">Digital file<input name="digitalFile" type="file" required /></label>
           <label className="wide">Description<textarea name="description" required /></label>
+          <label className="field">Promo code (optional)<input name="promoCode" placeholder="e.g. LAUNCH99" /></label>
           <label className="wide" style={{ display: "flex", gap: 10, alignItems: "center" }}><input style={{ width: 18, minHeight: 18 }} type="checkbox" required /> I accept upload fee terms, copyright responsibility, and account removal policy.</label>
           <SubmitButton>Calculate Fee and Continue to Paystack</SubmitButton>
         </form>
